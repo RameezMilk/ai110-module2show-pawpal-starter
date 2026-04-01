@@ -44,13 +44,22 @@ constrains the plan. Cleaner separation of concerns.
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers three constraints: priority (high/medium/low), scheduled time
+(HH:MM), and the owner's available minutes for the day. Priority matters most because
+a busy pet owner needs to make sure the critical stuff (meds, feeding) happens even if
+there's not enough time for everything. Time is the secondary sort so that tasks with
+the same priority land in a natural chronological order. The available_minutes budget
+keeps the plan realistic — no point scheduling 3 hours of tasks if the owner only has 90
+minutes.
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The conflict detection only checks for exact time matches — if two tasks are both at
+"07:00" it flags a warning, but it doesn't check if a 30-minute task at 07:00 overlaps
+with a task at 07:15. This is a reasonable tradeoff because for a pet care app, most
+owners think in rough time blocks ("morning walk", "evening feeding") rather than
+minute-level precision. Checking for exact collisions catches the most common mistake
+(double-booking a slot) without overcomplicating the logic.
 
 ---
 
