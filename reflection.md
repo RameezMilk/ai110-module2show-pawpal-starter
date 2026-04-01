@@ -2,15 +2,41 @@
 
 ## 1. System Design
 
+Three core actions a user should be able to perform in natural language:
+
+1. The user should be able to see the tasks for that particular day
+2. Be able to add a task or edit from an existing set of tasks
+3. Add a pet with a designated owner
+
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+UML should have a user with an arrow to a frontend component,
+which represents the app's UI, and leaving that frontend component are
+a series of arrows, each of which correspond to an action invoked
+from different elements on the frontend. For example, clicking "add pet"
+should call the Pet Management Service and enable adding a pet with
+a designated owner, etc. (assuming service-oriented architecture)
+
+Four classes, each with a clear responsibility:
+- **Pet** — holds a name and species. Kept simple since the owner manages the relationship.
+- **Task** — represents a single care task (title, duration, priority, scheduled date) and
+  points to the Pet it's for. Uses a dataclass so we don't need boilerplate.
+- **Owner** — the central hub. Holds a list of pets and tasks, and exposes add_pet(),
+  add_task(), and get_tasks_for_date(). Also tracks available_minutes so the scheduler
+  knows how much time the owner actually has in a day.
+- **Schedule** — takes an owner and a date, then generate_plan() filters and orders
+  the tasks by priority while staying within the owner's available time.
+  explain_plan() gives a human-readable breakdown of why tasks were chosen and ordered.
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+After reviewing the skeleton with AI, one overlap stood out: Owner had a
+get_tasks_for_today() method, but Schedule.generate_plan() would also need
+to filter tasks by date. Having both do the same filtering is redundant and
+could lead to inconsistencies. So I removed get_tasks_for_today() and replaced
+it with a more flexible get_tasks_for_date(target_date) on Owner — this way
+Owner just does the lookup, and Schedule is the one that actually orders and
+constrains the plan. Cleaner separation of concerns.
 
 ---
 
