@@ -2,6 +2,10 @@
 
 **PawPal+** is a Streamlit app that helps a pet owner plan daily care tasks for their pets. It considers priority, time, and how many minutes you actually have — then builds a smart schedule.
 
+## Demo
+
+<a href="/course_images/ai110/pawpal_image.png" target="_blank"><img src='/course_images/ai110/pawpal_image.png' title='PawPal App' width='' alt='PawPal App' class='center-block' /></a>
+
 ## Features
 
 - **Owner + pet management** — add pets, configure your available time for the day
