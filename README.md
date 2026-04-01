@@ -32,6 +32,25 @@ The scheduler in `pawpal_system.py` goes beyond a simple task list:
 - **Recurring tasks** — daily and weekly tasks auto-generate a new occurrence when marked complete (using `timedelta`).
 - **Conflict detection** — warns when multiple tasks are booked at the same time slot.
 
+## Testing PawPal+
+
+Run the test suite:
+
+```bash
+python -m pytest
+```
+
+The suite includes 20 tests covering:
+
+- **Task basics** — completion status, recurring task generation (daily/weekly), one-time tasks returning no follow-up
+- **Pet management** — adding tasks increases the pet's task count
+- **Scheduling logic** — priority ordering, time budget constraints, excluding completed tasks, chronological sorting
+- **Filtering** — by pet name, by completion status, nonexistent pet returns empty
+- **Conflict detection** — same-time conflicts (same pet and cross-pet), no false positives when times differ
+- **Edge cases** — pet with no tasks, owner with no pets, tasks on wrong date, all tasks exceeding budget
+
+**Confidence Level: ⭐⭐⭐⭐ (4/5)** — happy paths and key edge cases are well covered. The main gap is overlap-based conflict detection (e.g., a 30-min task at 07:00 vs a task at 07:15) which we intentionally skip in favor of simplicity.
+
 ## Getting started
 
 ### Setup

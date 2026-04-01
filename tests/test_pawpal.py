@@ -166,3 +166,103 @@ def test_detect_conflicts():
 
     assert len(schedule.warnings) == 1
     assert "07:00" in schedule.warnings[0]
+
+
+# --- Edge cases ---
+
+def test_pet_with_no_tasks_generates_empty_plan():
+    owner = Owner(name="Jordan")
+    owner.add_pet(Pet(name="Mochi", species="dog"))
+
+    schedule = Schedule(date=date.today(), owner=owner)
+    plan = schedule.generate_plan()
+
+    assert plan == []
+    assert schedule.explain_plan() == "No tasks scheduled for today."
+
+
+def test_owner_with_no_pets_generates_empty_plan():
+    owner = Owner(name="Jordan")
+    schedule = Schedule(date=date.today(), owner=owner)
+    assert schedule.generate_plan() == []
+
+
+def test_tasks_on_wrong_date_excluded():
+    owner = Owner(name="Jordan")
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+
+    tomorrow = date.today() + timedelta(days=1)
+    pet.add_task(_make_task("Tomorrow task"))  # scheduled for today
+    pet.add_task(Task(title="Future task", duration_minutes=10, priority="high",
+                      scheduled_date=tomorrow))
+
+    schedule = Schedule(date=tomorrow, owner=owner)
+    plan = schedule.generate_plan()
+
+    assert len(plan) == 1
+    assert plan[0].title == "Future task"
+
+
+def test_all_tasks_exceed_budget():
+    owner = Owner(name="Jordan", available_minutes=10)
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+
+    pet.add_task(_make_task("Big task", minutes=30))
+    pet.add_task(_make_task("Bigger task", minutes=60))
+
+    schedule = Schedule(date=date.today(), owner=owner)
+    plan = schedule.generate_plan()
+
+    assert plan == []
+
+
+def test_conflict_across_different_pets():
+    owner = Owner(name="Jordan")
+    mochi = Pet(name="Mochi", species="dog")
+    whiskers = Pet(name="Whiskers", species="cat")
+    owner.add_pet(mochi)
+    owner.add_pet(whiskers)
+
+    mochi.add_task(_make_task("Walk Mochi", time="07:00"))
+    whiskers.add_task(_make_task("Feed Whiskers", time="07:00"))
+
+    schedule = Schedule(date=date.today(), owner=owner)
+    schedule.generate_plan()
+
+    assert len(schedule.warnings) == 1
+    assert "Walk Mochi" in schedule.warnings[0]
+    assert "Feed Whiskers" in schedule.warnings[0]
+
+
+def test_no_conflicts_when_times_differ():
+    owner = Owner(name="Jordan")
+    pet = Pet(name="Mochi", species="dog")
+    owner.add_pet(pet)
+
+    pet.add_task(_make_task("Walk", time="07:00"))
+    pet.add_task(_make_task("Feed", time="08:00"))
+    pet.add_task(_make_task("Meds", time="09:00"))
+
+    schedule = Schedule(date=date.today(), owner=owner)
+    schedule.generate_plan()
+
+    assert schedule.warnings == []
+
+
+def test_filter_by_nonexistent_pet_returns_empty():
+    owner = Owner(name="Jordan")
+    owner.add_pet(Pet(name="Mochi", species="dog"))
+
+    schedule = Schedule(date=date.today(), owner=owner)
+    assert schedule.filter_by_pet("Ghost") == []
+
+
+def test_recurring_task_preserves_time_and_priority():
+    task = _make_task("Walk", priority="high", time="07:30", frequency="daily")
+    next_task = task.mark_complete()
+
+    assert next_task.scheduled_time == "07:30"
+    assert next_task.priority == "high"
+    assert next_task.title == "Walk"

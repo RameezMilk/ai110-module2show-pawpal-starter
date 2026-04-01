@@ -81,13 +81,19 @@ minute-level precision. Checking for exact collisions catches the most common mi
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+20 tests total, covering happy paths and edge cases:
+- Task completion and recurring task generation (daily creates tomorrow, weekly creates next week, one-time returns nothing)
+- Adding tasks to a pet actually increases its task count
+- Scheduler sorts by priority then time, stays within the time budget, and excludes completed tasks
+- Filtering by pet name and completion status
+- Conflict detection flags same-time tasks (within a pet and across different pets), and doesn't false-positive when times differ
+- Edge cases: empty pets, empty owners, tasks on the wrong date, all tasks too big to fit
+
+These tests matter because the scheduler has multiple interacting constraints — priority, time, budget, completion status. Without tests it would be easy to break one thing while fixing another.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+4 out of 5. The core logic is solid and the edge cases I can think of are covered. If I had more time I'd test overlap-based conflicts (a 30-min task at 07:00 vs a task at 07:15), what happens when two pets have the exact same name, and stress-testing with a large number of tasks to make sure sorting doesn't degrade.
 
 ---
 
