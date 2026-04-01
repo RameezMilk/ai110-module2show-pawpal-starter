@@ -67,13 +67,21 @@ minute-level precision. Checking for exact collisions catches the most common mi
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+AI was used at every phase — brainstorming the initial class design, generating the Mermaid
+UML diagram, scaffolding the dataclass skeletons, implementing the scheduling algorithm,
+writing tests, and wiring the Streamlit UI. The most helpful prompts were the specific ones:
+"based on my skeletons, how should the Scheduler retrieve tasks from the Owner's pets?" got
+a much better answer than a vague "help me build a scheduler." Giving the AI the actual file
+as context made a huge difference.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+The AI initially put a get_tasks_for_today() method on Owner, but Schedule.generate_plan()
+would also need to filter by date — so that was duplicate logic. I rejected the overlap and
+replaced it with get_tasks_for_date(target_date) on Owner, keeping Schedule as the only class
+that orders and constrains the plan. I verified by thinking through what happens when both
+classes filter: if one gets updated and the other doesn't, you get inconsistent results.
+Cleaner to have one path for filtering and one for planning.
 
 ---
 
@@ -101,12 +109,22 @@ These tests matter because the scheduler has multiple interacting constraints �
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+The CLI-first workflow — building and verifying everything in main.py before touching
+Streamlit. By the time I wired up the UI, the logic was already solid and tested. The
+scheduler's generate_plan() method came together cleanly because each class had a single
+clear responsibility from the UML stage.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+The conflict detection is pretty basic — it only catches exact time matches, not overlapping
+durations. If I had another iteration I'd add real time-range overlap checking and maybe let
+the user resolve conflicts from the UI (pick which task to keep in the slot). I'd also add
+persistence so your pets and tasks don't disappear when you close the browser.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+AI is great at generating code fast, but you still need to be the architect. The AI doesn't
+know your design intent — it'll happily put the same logic in two places or add complexity
+you don't need. The most valuable skill was knowing when to say "no, that's redundant" and
+keeping the design clean. Using separate phases for design, implementation, and testing made
+it way easier to stay organized and catch bad suggestions before they became real problems.
